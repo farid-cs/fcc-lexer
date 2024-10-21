@@ -18,9 +18,9 @@ tokenize(Token *tokens, char *input)
 static void
 test_spaces_and_comments()
 {
-	char *input = "                     "
-	              "// A line comment    "
-	              "/* A block comment */";
+	char *input = "                     \n"
+	              "// A line comment    \n"
+	              "/* A block comment */\n";
 	Token tokens[1000];
 
 	assert(tokenize(tokens, input) == 0);

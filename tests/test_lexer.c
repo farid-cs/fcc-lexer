@@ -16,7 +16,7 @@ tokenize(Token *tokens, char *input)
 }
 
 static void
-test_spaces_and_comments()
+test_spaces_and_comments(void)
 {
 	char *input = "                     \n"
 	              "// A line comment    \n"
@@ -27,7 +27,7 @@ test_spaces_and_comments()
 }
 
 static void
-test_punctuation()
+test_punctuation(void)
 {
 	char *input = "+-*/%{}[]()=|&^!?~,.:;\\><+=-=*=/=%===!=>=<=||&&|=&=^=++-->><<->>>=<<=&&=||=...";
 	Token tokens[1000];

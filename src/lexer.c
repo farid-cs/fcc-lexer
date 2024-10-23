@@ -1,4 +1,6 @@
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -70,224 +72,185 @@ skip_spaces_and_comments(Lexer *self)
 }
 
 static int
-next_triple_char_punctuation(Lexer *self, Token *tok)
-{
-	const char *const p = self->pos;
-
-	if (!p[0] || !p[1] || !p[2] || p[0] != p[1])
-		return -1;
-	switch (*p) {
-	case '<':
-		if (p[2] != '=')
-			return -1;
-		tok->type = TokLShiftEq;
-		break;
-	case '>':
-		if (p[2] != '=')
-			return -1;
-		tok->type = TokRShiftEq;
-		break;
-	case '&':
-		if (p[2] != '=')
-			return -1;
-		tok->type = TokAndAndEq;
-		break;
-	case '|':
-		if (p[2] != '=')
-			return -1;
-		tok->type = TokOrOrEq;
-		break;
-	case '.':
-		if (p[2] != '.')
-			return -1;
-		tok->type = TokElipses;
-		break;
-	default:
-		return -1;
-	}
-	self->pos += 3;
-	return 0;
-}
-
-static int
-next_double_char_punctuation(Lexer *self, Token *tok)
-{
-	const char *const p = self->pos;
-
-	switch (*p) {
-	case '+':
-		tok->type = TokPlusEq;
-		break;
-	case '-':
-		tok->type = TokMinusEq;
-		break;
-	case '*':
-		tok->type = TokStarEq;
-		break;
-	case '/':
-		tok->type = TokSlashEq;
-		break;
-	case '%':
-		tok->type = TokModEq;
-		break;
-	case '!':
-		tok->type = TokExEq;
-		break;
-	case '|':
-		tok->type = TokOrEq;
-		break;
-	case '&':
-		tok->type = TokAndEq;
-		break;
-	case '^':
-		tok->type = TokXorEq;
-		break;
-	case '>':
-		tok->type = TokMoreEq;
-		break;
-	case '<':
-		tok->type = TokLessEq;
-		break;
-	case '=':
-		tok->type = TokEqEq;
-		break;
-	default:
-		return -1;
-	}
-	if (p[1] == '=') {
-		self->pos += 2;
-		return 0;
-	}
-	switch (*p) {
-	case '+':
-		tok->type = TokInc;
-		break;
-	case '-':
-		tok->type = TokDec;
-		break;
-	case '>':
-		tok->type = TokRShift;
-		break;
-	case '<':
-		tok->type = TokLShift;
-		break;
-	case '&':
-		tok->type = TokBoolAnd;
-		break;
-	case '|':
-		tok->type = TokBoolOr;
-		break;
-	default:
-		return -1;
-	}
-	if (p[0] == p[1]) {
-		self->pos += 2;
-		return 0;
-	}
-	if (p[0] == '-' && p[1] == '>') {
-		tok->type = TokArrow;
-		self->pos += 2;
-		return 0;
-	}
-	return -1;
-}
-
-static int
-next_single_char_punctuation(Lexer *self, Token *tok)
+next_punctuation(Lexer *self, Token *tok)
 {
 	switch (*self->pos) {
 	case '+':
-		tok->type = TokPlus;
+		if (self->pos[1] == '+') {
+			tok->type = PlusPlus;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = PlusEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Plus;
 		break;
 	case '-':
-		tok->type = TokMinus;
+		if (self->pos[1] == '>') {
+			tok->type = Arrow;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '-') {
+			tok->type = MinusMinus;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = MinusEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Minus;
 		break;
 	case '*':
-		tok->type = TokStar;
+		if (self->pos[1] == '=') {
+			tok->type = StarEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Star;
 		break;
 	case '/':
-		tok->type = TokSlash;
-		break;
-	case '\\':
-		tok->type = TokBackSlash;
+		if (self->pos[1] == '=') {
+			tok->type = SlashEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Slash;
 		break;
 	case '%':
-		tok->type = TokMod;
-		break;
-	case '{':
-		tok->type = TokLBrace;
-		break;
-	case '}':
-		tok->type = TokRBrace;
-		break;
-	case '[':
-		tok->type = TokLBracket;
-		break;
-	case ']':
-		tok->type = TokRBracket;
-		break;
-	case '(':
-		tok->type = TokLParen;
-		break;
-	case ')':
-		tok->type = TokRParen;
+		if (self->pos[1] == '=') {
+			tok->type = ModEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Mod;
 		break;
 	case '|':
-		tok->type = TokBitOr;
+		if (self->pos[1] == '|') {
+			if (self->pos[2] == '=') {
+				tok->type = OrOrEq;
+				self->pos += 2;
+				break;
+			}
+			tok->type = OrOr;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = OrEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Or;
 		break;
 	case '&':
-		tok->type = TokBitAnd;
+		if (self->pos[1] == '&') {
+			if (self->pos[2] == '=') {
+				tok->type = AndAndEq;
+				self->pos += 2;
+				break;
+			}
+			tok->type = AndAnd;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = AndEq;
+			self->pos++;
+			break;
+		}
+		tok->type = And;
 		break;
 	case '^':
-		tok->type = TokBitXor;
+		if (self->pos[1] == '=') {
+			tok->type = XorEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Xor;
 		break;
 	case '=':
-		tok->type = TokEq;
+		if (self->pos[1] == '=') {
+			tok->type = EqEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Equal;
 		break;
 	case '>':
-		tok->type = TokMore;
+		if (self->pos[1] == '>') {
+			if (self->pos[2] == '=') {
+				tok->type = RightShiftEq;
+				self->pos += 2;
+				break;
+			}
+			tok->type = RightShift;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = GreaterEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Greater;
 		break;
 	case '<':
-		tok->type = TokLess;
+		if (self->pos[1] == '<') {
+			if (self->pos[2] == '=') {
+				tok->type = LeftShiftEq;
+				self->pos += 2;
+				break;
+			}
+			tok->type = LeftShift;
+			self->pos++;
+			break;
+		}
+		if (self->pos[1] == '=') {
+			tok->type = LessEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Less;
 		break;
 	case '!':
-		tok->type = TokEx;
-		break;
-	case '?':
-		tok->type = TokQue;
-		break;
-	case '~':
-		tok->type = TokBitNot;
-		break;
-	case ',':
-		tok->type = TokComma;
+		if (self->pos[1] == '=') {
+			tok->type = NotEq;
+			self->pos++;
+			break;
+		}
+		tok->type = Not;
 		break;
 	case '.':
-		tok->type = TokDot;
+		if (self->pos[1] == '.' && self->pos[2] == '.') {
+			tok->type = Elipses;
+			self->pos += 2;
+			break;
+		}
+		tok->type = Dot;
 		break;
-	case ':':
-		tok->type = TokColon;
-		break;
-	case ';':
-		tok->type = TokSemiColon;
-		break;
+	case '\\': tok->type = Backslash;    break;
+	case '{':  tok->type = LeftBrace;    break;
+	case '}':  tok->type = RightBrace;   break;
+	case '[':  tok->type = LeftBracket;  break;
+	case ']':  tok->type = RightBracket; break;
+	case '(':  tok->type = LeftParen;    break;
+	case ')':  tok->type = RightParen;   break;
+	case '?':  tok->type = Que;          break;
+	case '~':  tok->type = Tilde;        break;
+	case ',':  tok->type = Comma;        break;
+	case ':':  tok->type = Colon;        break;
+	case ';':  tok->type = Semicolon;    break;
 	default:
 		return -1;
 	}
 	self->pos++;
 	return 0;
-}
-
-static int
-next_punctuation(Lexer *self, Token *tok)
-{
-	if (!next_triple_char_punctuation(self, tok))
-		return 0;
-	if (!next_double_char_punctuation(self, tok))
-		return 0;
-	if (!next_single_char_punctuation(self, tok))
-		return 0;
-	return -1;
 }
 
 Lexer

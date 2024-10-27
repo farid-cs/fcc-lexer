@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/lexer.h"
+#include "lexer.h"
 
 static size_t
 tokenize(Token *tokens, char *input)

@@ -1,15 +1,15 @@
 CFLAGS = -Wall -Wextra -g
 
-lib/liblexer.a: src/lexer.o lib
+lib/liblexer.a: lexer.o lib
 	$(AR) r $@ $<
 
 lib:
 	mkdir -p lib
 
-tests/test_lexer: tests/test_lexer.o lib/liblexer.a
+test_lexer: test_lexer.o lib/liblexer.a
 
-test: tests/test_lexer
-	./tests/test_lexer
+test: test_lexer
+	./test_lexer
 clean:
-	rm -rf lib src/*.o
+	rm -rf lib *.o
 .PHONY: clean test

@@ -2,7 +2,7 @@ CFLAGS = -Wall -Wextra -g
 PREFIX = /usr/local
 
 liblexer.a: lexer.o
-	$(AR) r $@ $<
+	$(AR) rcs $@ $<
 
 test_lexer: test_lexer.o liblexer.a
 

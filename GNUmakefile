@@ -9,7 +9,7 @@ test_lexer: test_lexer.o liblexer.a
 test: test_lexer
 	./test_lexer
 
-install:
+install: liblexer.a
 	cp liblexer.a ${PREFIX}/lib
 
 clean:

@@ -10,6 +10,7 @@ test: test_lexer
 	./test_lexer
 
 install: liblexer.a
+	cp lexer.h ${PREFIX}/include
 	cp liblexer.a ${PREFIX}/lib
 
 clean:

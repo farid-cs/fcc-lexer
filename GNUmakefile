@@ -8,5 +8,5 @@ test_lexer: test_lexer.o liblexer.a
 test: test_lexer
 	./test_lexer
 clean:
-	rm -f *.o *.a
+	rm -f *.o *.a test_lexer
 .PHONY: clean test

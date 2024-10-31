@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 
-typedef enum TokenType TokenType;
 enum TokenType {
 	Plus,
 	Minus,
@@ -60,7 +59,7 @@ enum TokenType {
 
 typedef struct Token Token;
 struct Token {
-	TokenType type;
+	enum TokenType type;
 };
 
 typedef struct Lexer Lexer;

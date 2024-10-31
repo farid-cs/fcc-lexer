@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -pedantic -g
 PREFIX = /usr/local
 
 liblexer.a: lexer.o

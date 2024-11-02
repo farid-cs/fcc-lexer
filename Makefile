@@ -1,12 +1,17 @@
+CC = cc
 CFLAGS = -Wall -Wextra -pedantic -g
 PREFIX = /usr/local
 
 liblexer.a: lexer.o
-	$(AR) rcs $@ $<
+	$(AR) rcs $@ $?
+
+test_lexer: test_lexer.o liblexer.a
+	$(CC) -o $@ $< liblexer.a
 
 lexer.o: lexer.c lexer.h
 
-test_lexer: test_lexer.o liblexer.a
+.o:
+	$(CC) -o $@ $<
 
 test: test_lexer
 	./test_lexer

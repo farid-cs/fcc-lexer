@@ -19,11 +19,8 @@ liblexer.a: lexer.o
 	$(AR) rcs $@ $?
 
 test_lexer: test_lexer.o liblexer.a
-	$(CC) -o $@ $< liblexer.a
+	$(CC) -o $@ test_lexer.o liblexer.a
 
 lexer.o: lexer.c lexer.h
-
-.o:
-	$(CC) -o $@ $<
 
 .PHONY: all clean test install

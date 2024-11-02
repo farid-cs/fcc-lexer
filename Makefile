@@ -8,7 +8,7 @@ test: test_lexer
 	./test_lexer
 
 install: liblexer.a
-	mkdir -p ${PREFIX}/include ${PREFIX}/include
+	mkdir -p ${PREFIX}/include ${PREFIX}/lib
 	cp lexer.h ${PREFIX}/include
 	cp liblexer.a ${PREFIX}/lib
 

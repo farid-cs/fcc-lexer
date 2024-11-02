@@ -21,6 +21,7 @@ liblexer.a: lexer.o
 test_lexer: test_lexer.o liblexer.a
 	$(CC) -o $@ test_lexer.o liblexer.a
 
+test_lexer.o: test_lexer.c lexer.h
 lexer.o: lexer.c lexer.h
 
 .PHONY: all clean test install

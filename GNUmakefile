@@ -4,6 +4,8 @@ PREFIX = /usr/local
 liblexer.a: lexer.o
 	$(AR) rcs $@ $<
 
+lexer.o: lexer.c lexer.h
+
 test_lexer: test_lexer.o liblexer.a
 
 test: test_lexer

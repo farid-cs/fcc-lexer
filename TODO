@@ -1,0 +1,4 @@
+TODO
+====
+- Choose some coding style
+- The library should not call any of the functions like assert, exit and abort that terminate executation of a program 

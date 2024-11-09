@@ -23,51 +23,42 @@ print_pos(Lexer *self, const char *pos)
 }
 
 static int
-skip_space(Lexer *self)
-{
-	if (!isspace(*self->pos))
-		return -1;
-	self->pos++;
-	return 0;
-}
-
-static int
-skip_line_comment(Lexer *self)
+skip_space_or_comment(Lexer *self)
 {
 	const char *pos = self->pos;
 
-	if (*pos++ != '/' || *pos++ != '/')
-		return -1;
-	while (*pos && *pos != '\n')
-		pos++;
-	self->pos = pos;
-	return 0;
-}
-
-static int
-skip_block_comment(Lexer *self)
-{
-	const char *pos = self->pos;
-
-	if (*pos++ != '/' || *pos++ != '*')
-		return -1;
-	for (;; pos++) {
-		if (*pos == '\0') {
-			print_pos(self, pos);
-			fprintf(stderr, "error: unterminated block comment\n");
-			exit(1);
-		}
-		if (pos[0] == '*' && pos[1] == '/')
-			break;
+	if (isspace(*pos)) {
+		self->pos++;
+		return 0;
 	}
-	self->pos = pos + 2;
-	return 0;
+	if (*pos++ != '/')
+		return -1;
+	switch (*pos++) {
+	case '/':
+		while (*pos && *pos != '\n')
+			pos++;
+		self->pos = pos;
+		return 0;
+	case '*':
+		for (;; pos++) {
+			if (*pos == '\0') {
+				print_pos(self, pos);
+				fprintf(stderr, "error: unterminated block comment\n");
+				exit(1);
+			}
+			if (pos[0] == '*' && pos[1] == '/')
+				break;
+		}
+		self->pos = pos + 2;
+		return 0;
+	}
+	return -1;
 }
 
 static void
 skip_spaces_and_comments(Lexer *self)
 {
-	while (!skip_space(self) || !skip_line_comment(self) || !skip_block_comment(self))
+	while (!skip_space_or_comment(self))
 		continue;
 }
 

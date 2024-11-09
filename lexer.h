@@ -1,8 +1,6 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <stddef.h>
-
 enum TokenType {
 	Plus,
 	Minus,

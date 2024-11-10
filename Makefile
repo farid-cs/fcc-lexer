@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -Wextra -Wpedantic -g
+CFLAGS = -std=c99 -pedantic -Wall -Wextra -g
 LDFLAGS = -L. -llexer
 PREFIX = /usr/local
 

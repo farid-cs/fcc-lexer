@@ -1,7 +1,7 @@
 CC = cc
 CFLAGS = -std=c99 -pedantic -Wall -Wextra -g
 LDFLAGS = -L. -llexer
-PREFIX = /usr/local
+PREFIX = ~/.local
 
 all: liblexer.a
 

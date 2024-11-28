@@ -1,11 +1,10 @@
 CC = cc
-CFLAGS = -std=c99 -pedantic -Wall -Wextra -g
-TEST_OBJ = tests.o lexer.o
+CFLAGS = -g -std=c99 -pedantic -Wall -Wextra
 
 all: tests
 
-tests: ${TEST_OBJ}
-	${CC} -o $@ ${TEST_OBJ}
+tests: tests.o lexer.o
+	${CC} -o $@ tests.o lexer.o
 
 tests.o: tests.c lexer.h
 lexer.o: lexer.c lexer.h

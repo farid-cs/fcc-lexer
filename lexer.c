@@ -22,8 +22,11 @@
  */
 
 #include <ctype.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lexer.h"
 
@@ -265,6 +268,71 @@ next_punctuation(Lexer *self, Token *tok)
 	return 0;
 }
 
+static int
+next_number(Lexer *self, Token *tok)
+{
+	char *pos;
+	char suffix[4] = {0};
+	int len = 0;
+
+	errno = 0;
+	tok->number = strtoumax(self->pos, &pos, 10);
+	tok->type = Integer;
+
+	if (!tok->number && errno)
+		return -1;
+
+	if (tok->number == UINTMAX_MAX && errno) {
+		print_pos(self, pos);
+		fprintf(stderr, "error: too large integer\n");
+		return -1;
+	}
+
+	while (isalpha(pos[len])) {
+		if (len >= 3)
+			goto FAIL;
+		suffix[len] = pos[len];
+		len++;
+	}
+
+	if (!strcmp(suffix, "")) {
+		self->pos = pos;
+		return 0;
+	}
+	if (!strcmp(suffix, "L")) {
+		self->pos = pos + 1;
+		return 0;
+	}
+	if (!strcmp(suffix, "LL")) {
+		self->pos = pos + 2;
+		return 0;
+	}
+	if (!strcmp(suffix, "LU")) {
+		self->pos = pos + 2;
+		return 0;
+	}
+	if (!strcmp(suffix, "LLU")) {
+		self->pos = pos + 3;
+		return 0;
+	}
+	if (!strcmp(suffix, "U")) {
+		self->pos = pos + 1;
+		return 0;
+	}
+	if (!strcmp(suffix, "UL")) {
+		self->pos = pos + 2;
+		return 0;
+	}
+	if (!strcmp(suffix, "ULL")) {
+		self->pos = pos + 3;
+		return 0;
+	}
+FAIL:
+	print_pos(self, pos);
+	fprintf(stderr, "error: ivalid suffix for integer\n");
+	exit(1);
+}
+
 Lexer
 new_lexer(const char *str)
 {
@@ -279,6 +347,8 @@ next_token(Lexer *self, Token *tok)
 {
 	skip_spaces_and_comments(self);
 	if (!next_punctuation(self, tok))
+		return 0;
+	if (!next_number(self, tok))
 		return 0;
 	if (*self->pos == '\0')
 		return EOF;

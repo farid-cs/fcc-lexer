@@ -87,11 +87,30 @@ test_punctuation(void)
 	assert(token_number == n);
 }
 
+static void
+test_number(void)
+{
+	char *input = "10 200L 400ULL";
+	Token tokens[1000];
+	size_t n = 0;
+	size_t token_number;
+
+	token_number = tokenize(tokens, input);
+	assert(tokens[n].type == Integer);
+	assert(tokens[n++].number == 10);
+	assert(tokens[n].type == Integer);
+	assert(tokens[n++].number == 200);
+	assert(tokens[n].type == Integer);
+	assert(tokens[n++].number == 400);
+	assert(token_number == n);
+}
+
 int
 main(void)
 {
 	test_spaces_and_comments();
 	test_punctuation();
+	test_number();
 	puts("All tests passed");
 	return 0;
 }

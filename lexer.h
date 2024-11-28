@@ -24,6 +24,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <inttypes.h>
+
 enum TokenType {
 	Plus,
 	Minus,
@@ -76,11 +78,14 @@ enum TokenType {
 	AndAndEq,
 	OrOrEq,
 	Elipses,
+
+	Integer,
 };
 
 typedef struct Token Token;
 struct Token {
 	enum TokenType type;
+	uintmax_t number;
 };
 
 typedef struct Lexer Lexer;

@@ -279,7 +279,7 @@ next_number(Lexer *self, Token *tok)
 	tok->number = strtoumax(self->pos, &pos, 10);
 	tok->type = Integer;
 
-	if (!tok->number && errno)
+	if (!tok->number && (errno || self->pos == pos))
 		return -1;
 
 	if (tok->number == UINTMAX_MAX && errno) {

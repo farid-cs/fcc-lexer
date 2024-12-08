@@ -6,8 +6,7 @@ all: tests
 tests: tests.o lexer.o
 	${CC} -o $@ tests.o lexer.o
 
-tests.o: tests.c lexer.h
-lexer.o: lexer.c lexer.h
+lexer.o tests.o: lexer.h
 
 test: tests
 	./tests

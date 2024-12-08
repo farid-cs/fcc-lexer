@@ -351,7 +351,7 @@ next_token(Lexer *self, Token *tok)
 	if (!next_number(self, tok))
 		return 0;
 	if (*self->pos == '\0')
-		return EOF;
+		return -1;
 
 	print_pos(self, self->pos);
 	fprintf(stderr, "error: unexpected character\n");

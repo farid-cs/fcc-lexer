@@ -7,9 +7,10 @@
 static size_t
 tokenize(Token *tokens, char *input)
 {
-	Lexer lexer = new_lexer(input);
+	Lexer lexer;
 	size_t n = 0;
 
+	lexer_init(&lexer, input);
 	while (!next_token(&lexer, tokens++))
 		n++;
 	return n;

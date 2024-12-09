@@ -94,7 +94,7 @@ struct Lexer {
 	const char *pos;
 };
 
-Lexer	new_lexer(const char *);
+void	lexer_init(Lexer *, const char *);
 int	next_token(Lexer *, Token *);
 
 #endif

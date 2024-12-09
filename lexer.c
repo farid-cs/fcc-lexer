@@ -118,36 +118,11 @@ next_number(Lexer *self, Token *tok)
 		len++;
 	}
 
-	if (!strcmp(suffix, "")) {
-		self->pos = pos;
-		return 0;
-	}
-	if (!strcmp(suffix, "L")) {
-		self->pos = pos + 1;
-		return 0;
-	}
-	if (!strcmp(suffix, "LL")) {
-		self->pos = pos + 2;
-		return 0;
-	}
-	if (!strcmp(suffix, "LU")) {
-		self->pos = pos + 2;
-		return 0;
-	}
-	if (!strcmp(suffix, "LLU")) {
-		self->pos = pos + 3;
-		return 0;
-	}
-	if (!strcmp(suffix, "U")) {
-		self->pos = pos + 1;
-		return 0;
-	}
-	if (!strcmp(suffix, "UL")) {
-		self->pos = pos + 2;
-		return 0;
-	}
-	if (!strcmp(suffix, "ULL")) {
-		self->pos = pos + 3;
+	if (!strcmp(suffix, "") || !strcmp(suffix, "L")
+	    || !strcmp(suffix, "LL") || !strcmp(suffix, "LU")
+	    || !strcmp(suffix, "LLU") || !strcmp(suffix, "U")
+	    || !strcmp(suffix, "UL") || !strcmp(suffix, "ULL")) {
+		self->pos = pos + len;
 		return 0;
 	}
 FAIL:

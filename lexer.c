@@ -156,13 +156,11 @@ FAIL:
 	exit(1);
 }
 
-Lexer
-new_lexer(const char *str)
+void
+lexer_init(Lexer *lexer, const char *str)
 {
-	return (Lexer) {
-		.start = str,
-		.pos = str,
-	};
+	lexer->start = str;
+	lexer->pos = str;
 }
 
 int

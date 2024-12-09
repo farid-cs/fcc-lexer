@@ -94,35 +94,29 @@ skip_spaces_and_comments(Lexer *self)
 static int
 next_number(Lexer *self, Token *tok)
 {
-	char *pos;
+	const char *pos;
 	char suffix[4] = {0};
-	int len = 0;
+	size_t suflen = 0;
 
-	errno = 0;
-	tok->number = strtoumax(self->pos, &pos, 10);
+	pos = self->pos;
 	tok->type = Integer;
+	while (isdigit(*pos))
+		pos++;
 
-	if (!tok->number && (errno || self->pos == pos))
-		return -1;
-
-	if (tok->number == UINTMAX_MAX && errno) {
-		print_pos(self, pos);
-		fprintf(stderr, "error: too large integer\n");
-		return -1;
-	}
-
-	while (isalpha(pos[len])) {
-		if (len >= 3)
+	while (isalpha(pos[suflen])) {
+		if (suflen >= 3)
 			goto FAIL;
-		suffix[len] = pos[len];
-		len++;
+		suffix[suflen] = pos[suflen];
+		suflen++;
 	}
 
 	if (!strcmp(suffix, "") || !strcmp(suffix, "L")
 	    || !strcmp(suffix, "LL") || !strcmp(suffix, "LU")
 	    || !strcmp(suffix, "LLU") || !strcmp(suffix, "U")
 	    || !strcmp(suffix, "UL") || !strcmp(suffix, "ULL")) {
-		self->pos = pos + len;
+		tok->pos = self->pos;
+		tok->len = pos + suflen - tok->pos;
+		self->pos = pos + suflen;
 		return 0;
 	}
 FAIL:
@@ -144,6 +138,8 @@ next_token(Lexer *self, Token *tok)
 	skip_spaces_and_comments(self);
 
 	switch (*self->pos) {
+	case '\0':
+		return -1;
 	case '+':
 		if (self->pos[1] == '+') {
 			tok->type = PlusPlus;
@@ -350,12 +346,18 @@ next_token(Lexer *self, Token *tok)
 		tok->type = Semicolon;
 		self->pos++;
 		return 0;
-	}
-
-	if (!next_number(self, tok))
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		next_number(self, tok);
 		return 0;
-	if (*self->pos == '\0')
-		return -1;
+	}
 
 	print_pos(self, self->pos);
 	fprintf(stderr, "error: unexpected character\n");

@@ -93,17 +93,21 @@ test_number(void)
 {
 	char *input = "10 200L 400ULL";
 	Token tokens[1000];
-	size_t n = 0;
+	Token *token;
 	size_t token_number;
 
+	token = tokens;
 	token_number = tokenize(tokens, input);
-	assert(tokens[n].type == Integer);
-	assert(tokens[n++].number == 10);
-	assert(tokens[n].type == Integer);
-	assert(tokens[n++].number == 200);
-	assert(tokens[n].type == Integer);
-	assert(tokens[n++].number == 400);
-	assert(token_number == n);
+	assert(token->type == Integer);
+	assert(!memcmp(token->pos, "10", token->len));
+	token++;
+	assert(token->type == Integer);
+	assert(!memcmp(token->pos, "200L", token->len));
+	token++;
+	assert(token->type == Integer);
+	assert(!memcmp(token->pos, "400ULL", token->len));
+	token++;
+	assert(token_number == (size_t)(token - tokens));
 }
 
 int

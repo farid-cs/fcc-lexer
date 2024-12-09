@@ -85,7 +85,8 @@ enum TokenType {
 typedef struct Token Token;
 struct Token {
 	enum TokenType type;
-	uintmax_t number;
+	const char *pos;
+	size_t len;
 };
 
 typedef struct Lexer Lexer;

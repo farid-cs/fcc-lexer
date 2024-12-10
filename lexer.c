@@ -92,7 +92,7 @@ skip_spaces_and_comments(Lexer *self)
 }
 
 static int
-next_number(Lexer *self, Token *tok)
+next_integer(Lexer *self, Token *tok)
 {
 	const char *pos;
 	char suffix[4] = {0};
@@ -355,7 +355,7 @@ next_token(Lexer *self, Token *tok)
 	case '7':
 	case '8':
 	case '9':
-		next_number(self, tok);
+		next_integer(self, tok);
 		return 0;
 	}
 

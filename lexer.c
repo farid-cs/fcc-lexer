@@ -56,7 +56,7 @@ skip_space_or_comment(Lexer *self)
 		if (*pos == '/') {
 			while (*pos && *pos != '\n')
 				pos++;
-			self->pos = pos + 1;
+			self->pos = (char *) pos + 1;
 			return 0;
 		}
 
@@ -71,7 +71,7 @@ skip_space_or_comment(Lexer *self)
 			if (pos[0] == '*' && pos[1] == '/')
 				break;
 		}
-		self->pos = pos + 2;
+		self->pos = (char *) pos + 2;
 		return 0;
 	case ' ':
 	case '\t':
@@ -116,7 +116,7 @@ next_integer(Lexer *self, Token *tok)
 	    || !strcmp(suffix, "UL") || !strcmp(suffix, "ULL")) {
 		tok->pos = self->pos;
 		tok->len = pos + suflen - tok->pos;
-		self->pos = pos + suflen;
+		self->pos = (char *) pos + suflen;
 		return 0;
 	}
 FAIL:
@@ -128,8 +128,8 @@ FAIL:
 void
 lexer_init(Lexer *lexer, const char *str)
 {
-	lexer->start = str;
-	lexer->pos = str;
+	lexer->start = (char *) str;
+	lexer->pos = (char *) str;
 }
 
 int

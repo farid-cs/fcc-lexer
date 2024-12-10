@@ -85,14 +85,14 @@ enum TokenType {
 typedef struct Token Token;
 struct Token {
 	enum TokenType type;
-	const char *pos;
+	char *pos;
 	size_t len;
 };
 
 typedef struct Lexer Lexer;
 struct Lexer {
-	const char *start;
-	const char *pos;
+	char *start;
+	char *pos;
 };
 
 void	lexer_init(Lexer *, const char *);

@@ -24,7 +24,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <inttypes.h>
+#include <stddef.h>
 
 enum TokenType {
 	Plus,

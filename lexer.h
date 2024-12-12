@@ -82,6 +82,13 @@ enum TokenType {
 	Integer,
 };
 
+enum ErrorType {
+	NOERROR,
+	BLOCK_COMMENT,
+	INTEGER_SUFFIX,
+	UNEXPECTED,
+};
+
 typedef struct Token Token;
 struct Token {
 	enum TokenType type;
@@ -93,9 +100,11 @@ typedef struct Lexer Lexer;
 struct Lexer {
 	char *start;
 	char *pos;
+	enum ErrorType err;
 };
 
 void	lexer_init(Lexer *, const char *);
 int	next_token(Lexer *, Token *);
+void	print_error(Lexer *);
 
 #endif

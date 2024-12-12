@@ -13,6 +13,7 @@ tokenize(Token *tokens, char *input)
 	lexer_init(&lexer, input);
 	while (!next_token(&lexer, tokens++))
 		n++;
+	assert(lexer.err == NOERROR);
 	return n;
 }
 

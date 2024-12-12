@@ -23,17 +23,17 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "lexer.h"
 
-static void
-print_pos(Lexer *self, const char *pos)
+void
+print_error(Lexer *self)
 {
 	size_t row = 1, col = 1;
+	const char *msg;
 
-	for (const char *p = self->start; p != pos; p++) {
+	for (const char *p = self->start; p != self->pos; p++) {
 		if (*p == '\n') {
 			row++;
 			col = 1;
@@ -41,7 +41,21 @@ print_pos(Lexer *self, const char *pos)
 			col++;
 		}
 	}
-	fprintf(stderr, "%zu:%zu: ", row, col);
+	switch (self->err) {
+	case BLOCK_COMMENT:
+		msg = "unterminated block comment";
+		break;
+	case INTEGER_SUFFIX:
+		msg = "invalid integer suffix";
+		break;
+	case UNEXPECTED:
+		msg = "unexpected character";
+		break;
+	case NOERROR:
+		msg = "success";
+		break;
+	}
+	fprintf(stderr, "%zu:%zu: error: %s\n", row, col, msg);
 }
 
 static int
@@ -62,9 +76,8 @@ skip_space_or_comment(Lexer *self)
 			break;
 		for (;; pos++) {
 			if (*pos == '\0') {
-				print_pos(self, pos);
-				fprintf(stderr, "error: unterminated block comment\n");
-				exit(1);
+				self->err = BLOCK_COMMENT;
+				return -1;
 			}
 			if (pos[0] == '*' && pos[1] == '/')
 				break;
@@ -82,11 +95,13 @@ skip_space_or_comment(Lexer *self)
 	return -1;
 }
 
-static void
+static int
 skip_spaces_and_comments(Lexer *self)
 {
 	while (!skip_space_or_comment(self))
 		continue;
+
+	return !self->err ? 0 : -1;
 }
 
 static void
@@ -135,9 +150,8 @@ next_integer(Lexer *self, Token *tok)
 		return 0;
 	}
 FAIL:
-	print_pos(self, pos);
-	fprintf(stderr, "error: ivalid suffix for integer\n");
-	exit(1);
+	self->err = INTEGER_SUFFIX;
+	return -1;
 }
 
 void
@@ -145,12 +159,14 @@ lexer_init(Lexer *lexer, const char *str)
 {
 	lexer->start = (char *) str;
 	lexer->pos = (char *) str;
+	lexer->err = 0;
 }
 
 int
 next_token(Lexer *self, Token *tok)
 {
-	skip_spaces_and_comments(self);
+	if (skip_spaces_and_comments(self))
+		return -1;
 
 	switch (*self->pos) {
 	case '\0':
@@ -304,11 +320,9 @@ next_token(Lexer *self, Token *tok)
 	case '7':
 	case '8':
 	case '9':
-		next_integer(self, tok);
-		return 0;
+		return !next_integer(self, tok) ? 0 : -1; 
 	}
 
-	print_pos(self, self->pos);
-	fprintf(stderr, "error: unexpected character\n");
-	exit(1);
+	self->err = UNEXPECTED;
+	return -1;
 }

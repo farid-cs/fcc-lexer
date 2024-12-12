@@ -108,10 +108,18 @@ next_integer(Lexer *self, Token *tok)
 		suflen++;
 	}
 
-	if (!strcmp(suffix, "") || !strcmp(suffix, "L")
-	    || !strcmp(suffix, "LL") || !strcmp(suffix, "LU")
-	    || !strcmp(suffix, "LLU") || !strcmp(suffix, "U")
-	    || !strcmp(suffix, "UL") || !strcmp(suffix, "ULL")) {
+	if (!strcmp(suffix, "")
+	    || !strcmp(suffix, "l")   || strcmp(suffix, "L")
+	    || !strcmp(suffix, "u")   || strcmp(suffix, "U")
+	    || !strcmp(suffix, "ll")  || strcmp(suffix, "LL")
+	    || !strcmp(suffix, "lu")  || strcmp(suffix, "LU")
+	    || !strcmp(suffix, "ul")  || strcmp(suffix, "UL")
+	    || !strcmp(suffix, "Lu")  || strcmp(suffix, "lU")
+	    || !strcmp(suffix, "Ul")  || strcmp(suffix, "uL")
+	    || !strcmp(suffix, "llu") || strcmp(suffix, "LLU")
+	    || !strcmp(suffix, "ull") || strcmp(suffix, "ULL")
+	    || !strcmp(suffix, "LLu") || strcmp(suffix, "llU")
+	    || !strcmp(suffix, "Ull") || strcmp(suffix, "uLL")) {
 		tok->pos = self->pos;
 		tok->len = pos + suflen - tok->pos;
 		self->pos = (char *) pos + suflen;

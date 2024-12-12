@@ -53,10 +53,10 @@ test_punctuation(void)
 	assert(tokens[n++].type == And);
 	assert(tokens[n++].type == Xor);
 	assert(tokens[n++].type == Not);
-	assert(tokens[n++].type == Que);
+	assert(tokens[n++].type == Question);
 	assert(tokens[n++].type == Tilde);
 	assert(tokens[n++].type == Comma);
-	assert(tokens[n++].type == Dot);
+	assert(tokens[n++].type == Period);
 	assert(tokens[n++].type == Colon);
 	assert(tokens[n++].type == Semicolon);
 	assert(tokens[n++].type == Backslash);

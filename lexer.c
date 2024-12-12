@@ -273,7 +273,7 @@ next_token(Lexer *self, Token *tok)
 		if (self->pos[1] == '.' && self->pos[2] == '.')
 			next_punc(self, tok, Elipses, 3);
 		else
-			next_punc(self, tok, Dot, 1);
+			next_punc(self, tok, Period, 1);
 		return 0;
 	case '\\':
 		next_punc(self, tok, Backslash, 1);
@@ -297,7 +297,7 @@ next_token(Lexer *self, Token *tok)
 		next_punc(self, tok, RightParen, 1);
 		return 0;
 	case '?':
-		next_punc(self, tok, Que, 1);
+		next_punc(self, tok, Question, 1);
 		return 0;
 	case '~':
 		next_punc(self, tok, Tilde, 1);

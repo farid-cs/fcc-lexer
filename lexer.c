@@ -89,6 +89,15 @@ skip_spaces_and_comments(Lexer *self)
 		continue;
 }
 
+static void
+next_punc(Lexer *self, Token *tok, enum TokenType type, size_t len)
+{
+	tok->type = type;
+	tok->pos = self->pos;
+	tok->len = len;
+	self->pos += len;
+}
+
 static int
 next_integer(Lexer *self, Token *tok)
 {
@@ -147,210 +156,144 @@ next_token(Lexer *self, Token *tok)
 	case '\0':
 		return -1;
 	case '+':
-		if (self->pos[1] == '+') {
-			tok->type = PlusPlus;
-			self->pos += 2;
-		} else if (self->pos[1] == '=') {
-			tok->type = PlusEq;
-			self->pos += 2;
-		} else {
-			tok->type = Plus;
-			self->pos++;
-		}
+		if (self->pos[1] == '+')
+			next_punc(self, tok, PlusPlus, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, PlusEq, 2);
+		else
+			next_punc(self, tok, Plus, 1);
 		return 0;
 	case '-':
-		if (self->pos[1] == '>') {
-			tok->type = Arrow;
-			self->pos += 2;
-		} else if (self->pos[1] == '-') {
-			tok->type = MinusMinus;
-			self->pos += 2;
-		} else if (self->pos[1] == '=') {
-			tok->type = MinusEq;
-			self->pos += 2;
-		} else {
-			tok->type = Minus;
-			self->pos++;
-		}
+		if (self->pos[1] == '>')
+			next_punc(self, tok, Arrow, 2);
+		else if (self->pos[1] == '-')
+			next_punc(self, tok, MinusMinus, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, MinusEq, 2);
+		else
+			next_punc(self, tok, Minus, 1);
 		return 0;
 	case '*':
-		if (self->pos[1] == '=') {
-			tok->type = StarEq;
-			self->pos += 2;
-		} else {
-			tok->type = Star;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, StarEq, 2);
+		else
+			next_punc(self, tok, Star, 1);
 		return 0;
 	case '/':
-		if (self->pos[1] == '=') {
-			tok->type = SlashEq;
-			self->pos += 2;
-		} else {
-			tok->type = Slash;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, SlashEq, 2);
+		else
+			next_punc(self, tok, Slash, 1);
 		return 0;
 	case '%':
-		if (self->pos[1] == '=') {
-			tok->type = ModEq;
-			self->pos += 2;
-		} else {
-			tok->type = Mod;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, ModEq, 2);
+		else
+			next_punc(self, tok, Mod, 1);
 		return 0;
 	case '|':
-		if (self->pos[1] == '|') {
-			if (self->pos[2] == '=') {
-				tok->type = OrOrEq;
-				self->pos += 3;
-			} else {
-				tok->type = OrOr;
-				self->pos += 2;
-			}
-		} else if (self->pos[1] == '=') {
-			tok->type = OrEq;
-			self->pos += 2;
-		} else {
-			tok->type = Or;
-			self->pos++;
-		}
+		if (self->pos[1] == '|')
+			if (self->pos[2] == '=')
+				next_punc(self, tok, OrOrEq, 3);
+			else
+				next_punc(self, tok, OrOr, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, OrEq, 2);
+		else
+			next_punc(self, tok, Or, 1);
 		return 0;
 	case '&':
-		if (self->pos[1] == '&') {
-			if (self->pos[2] == '=') {
-				tok->type = AndAndEq;
-				self->pos += 3;
-			} else {
-				tok->type = AndAnd;
-				self->pos += 2;
-			}
-		} else if (self->pos[1] == '=') {
-			tok->type = AndEq;
-			self->pos += 2;
-		} else {
-			tok->type = And;
-			self->pos++;
-		}
+		if (self->pos[1] == '&')
+			if (self->pos[2] == '=')
+				next_punc(self, tok, AndAndEq, 3);
+			else
+				next_punc(self, tok, AndAnd, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, AndEq, 2);
+		else
+			next_punc(self, tok, And, 1);
 		return 0;
 	case '^':
-		if (self->pos[1] == '=') {
-			tok->type = XorEq;
-			self->pos += 2;
-		} else {
-			tok->type = Xor;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, XorEq, 2);
+		else
+			next_punc(self, tok, Xor, 1);
 		return 0;
 	case '=':
-		if (self->pos[1] == '=') {
-			tok->type = EqEq;
-			self->pos += 2;
-		} else {
-			tok->type = Equal;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, EqEq, 2);
+		else
+			next_punc(self, tok, Equal, 1);
 		return 0;
 	case '>':
-		if (self->pos[1] == '>') {
-			if (self->pos[2] == '=') {
-				tok->type = RightShiftEq;
-				self->pos += 3;
-			} else {
-				tok->type = RightShift;
-				self->pos += 2;
-			}
-		} else if (self->pos[1] == '=') {
-			tok->type = GreaterEq;
-			self->pos += 2;
-		} else {
-			tok->type = Greater;
-			self->pos++;
-		}
+		if (self->pos[1] == '>')
+			if (self->pos[2] == '=')
+				next_punc(self, tok, RightShiftEq, 3);
+			else
+				next_punc(self, tok, RightShift, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, GreaterEq, 2);
+		else
+			next_punc(self, tok, Greater, 1);
 		return 0;
 	case '<':
-		if (self->pos[1] == '<') {
-			if (self->pos[2] == '=') {
-				tok->type = LeftShiftEq;
-				self->pos += 3;
-			} else {
-				tok->type = LeftShift;
-				self->pos += 2;
-			}
-		} else if (self->pos[1] == '=') {
-			tok->type = LessEq;
-			self->pos += 2;
-		} else {
-			tok->type = Less;
-			self->pos++;
-		}
+		if (self->pos[1] == '<')
+			if (self->pos[2] == '=')
+				next_punc(self, tok, LeftShiftEq, 3);
+			else
+				next_punc(self, tok, LeftShift, 2);
+		else if (self->pos[1] == '=')
+			next_punc(self, tok, LessEq, 2);
+		else
+			next_punc(self, tok, Less, 1);
 		return 0;
 	case '!':
-		if (self->pos[1] == '=') {
-			tok->type = NotEq;
-			self->pos += 2;
-		} else {
-			tok->type = Not;
-			self->pos++;
-		}
+		if (self->pos[1] == '=')
+			next_punc(self, tok, NotEq, 2);
+		else
+			next_punc(self, tok, Not, 1);
 		return 0;
 	case '.':
-		if (self->pos[1] == '.' && self->pos[2] == '.') {
-			tok->type = Elipses;
-			self->pos += 3;
-		} else {
-			tok->type = Dot;
-			self->pos++;
-		}
+		if (self->pos[1] == '.' && self->pos[2] == '.')
+			next_punc(self, tok, Elipses, 3);
+		else
+			next_punc(self, tok, Dot, 1);
 		return 0;
 	case '\\':
-		tok->type = Backslash;
-		self->pos++;
+		next_punc(self, tok, Backslash, 1);
 		return 0;
 	case '{':
-		tok->type = LeftBrace;
-		self->pos++;
+		next_punc(self, tok, LeftBrace, 1);
 		return 0;
 	case '}':
-		tok->type = RightBrace;
-		self->pos++;
+		next_punc(self, tok, RightBrace, 1);
 		return 0;
 	case '[':
-		tok->type = LeftBracket;
-		self->pos++;
+		next_punc(self, tok, LeftBracket, 1);
 		return 0;
 	case ']':
-		tok->type = RightBracket;
-		self->pos++;
+		next_punc(self, tok, RightBracket, 1);
 		return 0;
 	case '(':
-		tok->type = LeftParen;
-		self->pos++;
+		next_punc(self, tok, LeftParen, 1);
 		return 0;
 	case ')':
-		tok->type = RightParen;
-		self->pos++;
+		next_punc(self, tok, RightParen, 1);
 		return 0;
 	case '?':
-		tok->type = Que;
-		self->pos++;
+		next_punc(self, tok, Que, 1);
 		return 0;
 	case '~':
-		tok->type = Tilde;
-		self->pos++;
+		next_punc(self, tok, Tilde, 1);
 		return 0;
 	case ',':
-		tok->type = Comma;
-		self->pos++;
+		next_punc(self, tok, Comma, 1);
 		return 0;
 	case ':':
-		tok->type = Colon;
-		self->pos++;
+		next_punc(self, tok, Colon, 1);
 		return 0;
 	case ';':
-		tok->type = Semicolon;
-		self->pos++;
+		next_punc(self, tok, Semicolon, 1);
 		return 0;
 	case '1':
 	case '2':

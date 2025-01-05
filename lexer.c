@@ -27,37 +27,6 @@
 
 #include "lexer.h"
 
-void
-print_error(Lexer *self)
-{
-	size_t row = 1, col = 1;
-	const char *msg;
-
-	for (const char *p = self->start; p != self->pos; p++) {
-		if (*p == '\n') {
-			row++;
-			col = 1;
-		} else {
-			col++;
-		}
-	}
-	switch (self->err) {
-	case BLOCK_COMMENT:
-		msg = "unterminated block comment";
-		break;
-	case INTEGER_SUFFIX:
-		msg = "invalid integer suffix";
-		break;
-	case UNEXPECTED:
-		msg = "unexpected character";
-		break;
-	case NOERROR:
-		msg = "success";
-		break;
-	}
-	fprintf(stderr, "%zu:%zu: error: %s\n", row, col, msg);
-}
-
 static int
 skip_space_or_comment(Lexer *self)
 {
@@ -101,7 +70,7 @@ skip_spaces_and_comments(Lexer *self)
 	while (!skip_space_or_comment(self))
 		continue;
 
-	return !self->err ? 0 : -1;
+	return self->err == NOERROR ? 0 : -1;
 }
 
 static void
@@ -111,6 +80,22 @@ next_punc(Lexer *self, Token *tok, TokenKind kind, size_t len)
 	tok->pos = self->pos;
 	tok->len = len;
 	self->pos += len;
+}
+
+static int
+is_integer_suffix(const char *str)
+{
+	return !strcmp(str, "l") || !strcmp(str, "L")
+		|| !strcmp(str, "u")   || !strcmp(str, "U")
+		|| !strcmp(str, "ll")  || !strcmp(str, "LL")
+		|| !strcmp(str, "lu")  || !strcmp(str, "LU")
+		|| !strcmp(str, "ul")  || !strcmp(str, "UL")
+		|| !strcmp(str, "Lu")  || !strcmp(str, "lU")
+		|| !strcmp(str, "Ul")  || !strcmp(str, "uL")
+		|| !strcmp(str, "llu") || !strcmp(str, "LLU")
+		|| !strcmp(str, "ull") || !strcmp(str, "ULL")
+		|| !strcmp(str, "LLu") || !strcmp(str, "llU")
+		|| !strcmp(str, "Ull") || !strcmp(str, "uLL");
 }
 
 static int
@@ -132,18 +117,7 @@ next_integer(Lexer *self, Token *tok)
 		suflen++;
 	}
 
-	if (!strcmp(suffix, "")
-	    || !strcmp(suffix, "l")   || !strcmp(suffix, "L")
-	    || !strcmp(suffix, "u")   || !strcmp(suffix, "U")
-	    || !strcmp(suffix, "ll")  || !strcmp(suffix, "LL")
-	    || !strcmp(suffix, "lu")  || !strcmp(suffix, "LU")
-	    || !strcmp(suffix, "ul")  || !strcmp(suffix, "UL")
-	    || !strcmp(suffix, "Lu")  || !strcmp(suffix, "lU")
-	    || !strcmp(suffix, "Ul")  || !strcmp(suffix, "uL")
-	    || !strcmp(suffix, "llu") || !strcmp(suffix, "LLU")
-	    || !strcmp(suffix, "ull") || !strcmp(suffix, "ULL")
-	    || !strcmp(suffix, "LLu") || !strcmp(suffix, "llU")
-	    || !strcmp(suffix, "Ull") || !strcmp(suffix, "uLL")) {
+	if (!suflen || is_integer_suffix(suffix)) {
 		tok->pos = self->pos;
 		tok->len = pos + suflen - tok->pos;
 		self->pos = (char *) pos + suflen;
@@ -320,9 +294,40 @@ next_token(Lexer *self, Token *tok)
 	case '7':
 	case '8':
 	case '9':
-		return !next_integer(self, tok) ? 0 : -1; 
+		return next_integer(self, tok); 
 	}
 
 	self->err = UNEXPECTED;
 	return -1;
+}
+
+void
+print_error(Lexer *self)
+{
+	size_t row = 1, col = 1;
+	const char *msg;
+
+	for (const char *p = self->start; p != self->pos; p++) {
+		if (*p == '\n') {
+			row++;
+			col = 1;
+		} else {
+			col++;
+		}
+	}
+	switch (self->err) {
+	case BLOCK_COMMENT:
+		msg = "unterminated block comment";
+		break;
+	case INTEGER_SUFFIX:
+		msg = "invalid integer suffix";
+		break;
+	case UNEXPECTED:
+		msg = "unexpected character";
+		break;
+	case NOERROR:
+		msg = "success";
+		break;
+	}
+	fprintf(stderr, "%zu:%zu: error: %s\n", row, col, msg);
 }

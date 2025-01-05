@@ -26,7 +26,7 @@
 
 #include <stddef.h>
 
-enum TokenType {
+typedef enum {
 	Plus,
 	Minus,
 	Star,
@@ -80,28 +80,26 @@ enum TokenType {
 	Elipses,
 
 	Integer,
-};
+} TokenKind;
 
-enum ErrorType {
+typedef enum {
 	NOERROR,
 	BLOCK_COMMENT,
 	INTEGER_SUFFIX,
 	UNEXPECTED,
-};
+} ErrorType;
 
-typedef struct Token Token;
-struct Token {
-	enum TokenType type;
+typedef struct {
+	TokenKind kind;
 	char *pos;
 	size_t len;
-};
+} Token;
 
-typedef struct Lexer Lexer;
-struct Lexer {
+typedef struct {
 	char *start;
 	char *pos;
-	enum ErrorType err;
-};
+	ErrorType err;
+} Lexer;
 
 void	lexer_init(Lexer *, const char *);
 int	next_token(Lexer *, Token *);

@@ -105,9 +105,9 @@ skip_spaces_and_comments(Lexer *self)
 }
 
 static void
-next_punc(Lexer *self, Token *tok, enum TokenType type, size_t len)
+next_punc(Lexer *self, Token *tok, TokenKind kind, size_t len)
 {
-	tok->type = type;
+	tok->kind = kind;
 	tok->pos = self->pos;
 	tok->len = len;
 	self->pos += len;
@@ -121,7 +121,7 @@ next_integer(Lexer *self, Token *tok)
 	size_t suflen = 0;
 
 	pos = self->pos;
-	tok->type = Integer;
+	tok->kind = Integer;
 	while (isdigit(*pos))
 		pos++;
 

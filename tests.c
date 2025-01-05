@@ -31,7 +31,7 @@ test_spaces_and_comments(void)
 static void
 test_punctuation(void)
 {
-	char *input = "+-*/%{}[]()=|&^!?~,.:;\\><+=-=*=/=%===!=>=<=||&&|=&=^=++-->><<->>>=<<=&&=||=...";
+	char *input = "+-*/%{}[]()=|&^!?~,.:;\\><+=-=*=/=%===!=>=<=||&&|=&=^=++-->><<->>>=<<=...";
 	Token tokens[1000];
 	size_t n = 0;
 	size_t token_number;
@@ -83,8 +83,6 @@ test_punctuation(void)
 	assert(tokens[n++].kind == Arrow);
 	assert(tokens[n++].kind == RightShiftEq);
 	assert(tokens[n++].kind == LeftShiftEq);
-	assert(tokens[n++].kind == AndAndEq);
-	assert(tokens[n++].kind == OrOrEq);
 	assert(tokens[n++].kind == Elipses);
 	assert(token_number == n);
 }

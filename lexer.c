@@ -183,10 +183,7 @@ next_token(Lexer *self, Token *tok)
 		return 0;
 	case '|':
 		if (self->pos[1] == '|')
-			if (self->pos[2] == '=')
-				next_punc(self, tok, OrOrEq, 3);
-			else
-				next_punc(self, tok, OrOr, 2);
+			next_punc(self, tok, OrOr, 2);
 		else if (self->pos[1] == '=')
 			next_punc(self, tok, OrEq, 2);
 		else
@@ -194,10 +191,7 @@ next_token(Lexer *self, Token *tok)
 		return 0;
 	case '&':
 		if (self->pos[1] == '&')
-			if (self->pos[2] == '=')
-				next_punc(self, tok, AndAndEq, 3);
-			else
-				next_punc(self, tok, AndAnd, 2);
+			next_punc(self, tok, AndAnd, 2);
 		else if (self->pos[1] == '=')
 			next_punc(self, tok, AndEq, 2);
 		else

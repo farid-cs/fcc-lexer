@@ -75,8 +75,6 @@ typedef enum {
 
 	RightShiftEq,
 	LeftShiftEq,
-	AndAndEq,
-	OrOrEq,
 	Elipses,
 
 	Integer,

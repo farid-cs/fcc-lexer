@@ -31,6 +31,14 @@ typedef struct {
 	size_t len;
 } Token;
 
+char *
+skip_whitespace(const char *str)
+{
+	while (isspace(*str))
+		str += 1;
+	return (char *)str;
+}
+
 size_t
 tokenize(char *str, Token *buf, size_t capacity)
 {
@@ -39,10 +47,7 @@ tokenize(char *str, Token *buf, size_t capacity)
 	while (bufpos != capacity && *str) {
 		size_t toklen = 0;
 
-		if (!isspace(*str)) {
-			str += 1;
-			continue;
-		}
+		str = skip_whitespace(str);
 
 		while (str[toklen] && !isspace(str[toklen]))
 			toklen += 1;

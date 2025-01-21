@@ -49,9 +49,20 @@ tokenize(char *str, Token *buf, size_t capacity)
 
 		str = skip_whitespace(str);
 
+		switch (*str) {
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+		case '%':
+			toklen = 1;
+			goto new_token;
+		}
+
 		while (str[toklen] && !isspace(str[toklen]))
 			toklen += 1;
 
+	new_token:
 		buf[bufpos].pos = str;
 		buf[bufpos].len = toklen;
 
@@ -65,7 +76,7 @@ tokenize(char *str, Token *buf, size_t capacity)
 int
 main(void)
 {
-	char source[] = "+ - * / %";
+	char source[] = "+-*/%";
 	Token buf[100];
 	size_t token_count;
 

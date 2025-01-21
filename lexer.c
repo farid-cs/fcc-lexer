@@ -37,21 +37,22 @@ tokenize(char *str, Token *buf, size_t capacity)
 	size_t bufpos = 0;
 
 	while (bufpos != capacity && *str) {
+		size_t toklen = 0;
+
 		if (!isspace(*str)) {
-			size_t toklen = 0;
-
-			while (str[toklen] && !isspace(str[toklen]))
-				toklen += 1;
-
-			buf[bufpos].pos = str;
-			buf[bufpos].len = toklen;
-
-			str += toklen;
-			bufpos += 1;
+			str += 1;
 			continue;
 		}
 
-		str += 1;
+		while (str[toklen] && !isspace(str[toklen]))
+			toklen += 1;
+
+		buf[bufpos].pos = str;
+		buf[bufpos].len = toklen;
+
+		str += toklen;
+		bufpos += 1;
+		continue;
 	}
 
 	return bufpos;

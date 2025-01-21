@@ -57,7 +57,6 @@ tokenize(char *str, Token *buf, size_t capacity)
 
 		str += toklen;
 		bufpos += 1;
-		continue;
 	}
 
 	return bufpos;

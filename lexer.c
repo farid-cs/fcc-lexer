@@ -23,305 +23,54 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 
-#include "lexer.h"
+#define LEN(arr) (sizeof (arr) / sizeof (arr[0]))
 
-static int
-skip_space_or_comment(Lexer *self)
+typedef struct {
+	char *pos;
+	size_t len;
+} Token;
+
+size_t
+tokenize(char *str, Token *buf, size_t capacity)
 {
-	const char *pos = self->pos;
+	size_t bufpos = 0;
 
-	switch (*pos++) {
-	case '/':
-		if (*pos == '/') {
-			while (*pos && *pos != '\n')
-				pos++;
-			self->pos = (char *) pos + 1;
-			return 0;
+	while (bufpos != capacity && *str) {
+		if (!isspace(*str)) {
+			size_t toklen = 0;
+
+			while (str[toklen] && !isspace(str[toklen]))
+				toklen += 1;
+
+			buf[bufpos].pos = str;
+			buf[bufpos].len = toklen;
+
+			str += toklen;
+			bufpos += 1;
+			continue;
 		}
 
-		if (*pos != '*')
-			break;
-		for (;; pos++) {
-			if (*pos == '\0') {
-				self->err = BLOCK_COMMENT;
-				return -1;
-			}
-			if (pos[0] == '*' && pos[1] == '/')
-				break;
-		}
-		self->pos = (char *) pos + 2;
-		return 0;
-	case ' ':
-	case '\t':
-	case '\v':
-	case '\r':
-	case '\n':
-		self->pos++;
-		return 0;
-	}
-	return -1;
-}
-
-static int
-skip_spaces_and_comments(Lexer *self)
-{
-	while (!skip_space_or_comment(self))
-		continue;
-
-	return self->err == NOERROR ? 0 : -1;
-}
-
-static void
-next_punc(Lexer *self, Token *tok, TokenKind kind, size_t len)
-{
-	tok->kind = kind;
-	tok->pos = self->pos;
-	tok->len = len;
-	self->pos += len;
-}
-
-static int
-is_integer_suffix(const char *str)
-{
-	return !strcmp(str, "l") || !strcmp(str, "L")
-		|| !strcmp(str, "u")   || !strcmp(str, "U")
-		|| !strcmp(str, "ll")  || !strcmp(str, "LL")
-		|| !strcmp(str, "lu")  || !strcmp(str, "LU")
-		|| !strcmp(str, "ul")  || !strcmp(str, "UL")
-		|| !strcmp(str, "Lu")  || !strcmp(str, "lU")
-		|| !strcmp(str, "Ul")  || !strcmp(str, "uL")
-		|| !strcmp(str, "llu") || !strcmp(str, "LLU")
-		|| !strcmp(str, "ull") || !strcmp(str, "ULL")
-		|| !strcmp(str, "LLu") || !strcmp(str, "llU")
-		|| !strcmp(str, "Ull") || !strcmp(str, "uLL");
-}
-
-static int
-next_integer(Lexer *self, Token *tok)
-{
-	const char *pos;
-	char suffix[4] = {0};
-	size_t suflen = 0;
-
-	pos = self->pos;
-	tok->kind = Integer;
-	while (isdigit(*pos))
-		pos++;
-
-	while (isalpha(pos[suflen])) {
-		if (suflen >= 3)
-			goto FAIL;
-		suffix[suflen] = pos[suflen];
-		suflen++;
+		str += 1;
 	}
 
-	if (!suflen || is_integer_suffix(suffix)) {
-		tok->pos = self->pos;
-		tok->len = pos + suflen - tok->pos;
-		self->pos = (char *) pos + suflen;
-		return 0;
-	}
-FAIL:
-	self->err = INTEGER_SUFFIX;
-	return -1;
-}
-
-void
-lexer_init(Lexer *lexer, const char *str)
-{
-	lexer->start = (char *) str;
-	lexer->pos = (char *) str;
-	lexer->err = 0;
+	return bufpos;
 }
 
 int
-next_token(Lexer *self, Token *tok)
+main(void)
 {
-	if (skip_spaces_and_comments(self))
-		return -1;
+	char source[] = "+ - * / %";
+	Token buf[100];
+	size_t token_count;
 
-	switch (*self->pos) {
-	case '\0':
-		return -1;
-	case '+':
-		if (self->pos[1] == '+')
-			next_punc(self, tok, PlusPlus, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, PlusEq, 2);
-		else
-			next_punc(self, tok, Plus, 1);
-		return 0;
-	case '-':
-		if (self->pos[1] == '>')
-			next_punc(self, tok, Arrow, 2);
-		else if (self->pos[1] == '-')
-			next_punc(self, tok, MinusMinus, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, MinusEq, 2);
-		else
-			next_punc(self, tok, Minus, 1);
-		return 0;
-	case '*':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, StarEq, 2);
-		else
-			next_punc(self, tok, Star, 1);
-		return 0;
-	case '/':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, SlashEq, 2);
-		else
-			next_punc(self, tok, Slash, 1);
-		return 0;
-	case '%':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, ModEq, 2);
-		else
-			next_punc(self, tok, Mod, 1);
-		return 0;
-	case '|':
-		if (self->pos[1] == '|')
-			next_punc(self, tok, OrOr, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, OrEq, 2);
-		else
-			next_punc(self, tok, Or, 1);
-		return 0;
-	case '&':
-		if (self->pos[1] == '&')
-			next_punc(self, tok, AndAnd, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, AndEq, 2);
-		else
-			next_punc(self, tok, And, 1);
-		return 0;
-	case '^':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, XorEq, 2);
-		else
-			next_punc(self, tok, Xor, 1);
-		return 0;
-	case '=':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, EqEq, 2);
-		else
-			next_punc(self, tok, Equal, 1);
-		return 0;
-	case '>':
-		if (self->pos[1] == '>')
-			if (self->pos[2] == '=')
-				next_punc(self, tok, RightShiftEq, 3);
-			else
-				next_punc(self, tok, RightShift, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, GreaterEq, 2);
-		else
-			next_punc(self, tok, Greater, 1);
-		return 0;
-	case '<':
-		if (self->pos[1] == '<')
-			if (self->pos[2] == '=')
-				next_punc(self, tok, LeftShiftEq, 3);
-			else
-				next_punc(self, tok, LeftShift, 2);
-		else if (self->pos[1] == '=')
-			next_punc(self, tok, LessEq, 2);
-		else
-			next_punc(self, tok, Less, 1);
-		return 0;
-	case '!':
-		if (self->pos[1] == '=')
-			next_punc(self, tok, NotEq, 2);
-		else
-			next_punc(self, tok, Not, 1);
-		return 0;
-	case '.':
-		if (self->pos[1] == '.' && self->pos[2] == '.')
-			next_punc(self, tok, Elipses, 3);
-		else
-			next_punc(self, tok, Period, 1);
-		return 0;
-	case '\\':
-		next_punc(self, tok, Backslash, 1);
-		return 0;
-	case '{':
-		next_punc(self, tok, LeftBrace, 1);
-		return 0;
-	case '}':
-		next_punc(self, tok, RightBrace, 1);
-		return 0;
-	case '[':
-		next_punc(self, tok, LeftBracket, 1);
-		return 0;
-	case ']':
-		next_punc(self, tok, RightBracket, 1);
-		return 0;
-	case '(':
-		next_punc(self, tok, LeftParen, 1);
-		return 0;
-	case ')':
-		next_punc(self, tok, RightParen, 1);
-		return 0;
-	case '?':
-		next_punc(self, tok, Question, 1);
-		return 0;
-	case '~':
-		next_punc(self, tok, Tilde, 1);
-		return 0;
-	case ',':
-		next_punc(self, tok, Comma, 1);
-		return 0;
-	case ':':
-		next_punc(self, tok, Colon, 1);
-		return 0;
-	case ';':
-		next_punc(self, tok, Semicolon, 1);
-		return 0;
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		return next_integer(self, tok); 
+	token_count = tokenize(source, buf, LEN(buf));
+
+	for (size_t i = 0; i != token_count; i++) {
+		printf("token[%zu]: ", i);
+		fwrite(buf[i].pos, buf[i].len, 1, stdout);
+		puts("");
 	}
 
-	self->err = UNEXPECTED;
-	return -1;
-}
-
-void
-print_error(Lexer *self)
-{
-	size_t row = 1, col = 1;
-	const char *msg;
-
-	for (const char *p = self->start; p != self->pos; p++) {
-		if (*p == '\n') {
-			row++;
-			col = 1;
-		} else {
-			col++;
-		}
-	}
-	switch (self->err) {
-	case BLOCK_COMMENT:
-		msg = "unterminated block comment";
-		break;
-	case INTEGER_SUFFIX:
-		msg = "invalid integer suffix";
-		break;
-	case UNEXPECTED:
-		msg = "unexpected character";
-		break;
-	case NOERROR:
-		msg = "success";
-		break;
-	}
-	fprintf(stderr, "%zu:%zu: error: %s\n", row, col, msg);
+	return 0;
 }

@@ -1,17 +1,12 @@
 CC = cc
-CFLAGS = -g -std=c99 -pedantic -Wall -Wextra
+CFLAGS = -std=c99 -pedantic -Wall -Wextra
 
-all: tests
+all: lexer
 
-tests: tests.o lexer.o
-	${CC} -o $@ tests.o lexer.o
-
-lexer.o tests.o: lexer.h
-
-test: tests
-	./tests
+lexer: lexer.o
+	${CC} -o $@ lexer.o
 
 clean:
-	rm -f *.o tests
+	rm -f lexer *.o
 
 .PHONY: all clean test

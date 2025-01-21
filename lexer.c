@@ -31,7 +31,7 @@ typedef struct {
 	size_t len;
 } Token;
 
-char *
+static char *
 skip_whitespace(const char *str)
 {
 	while (isspace(*str))
@@ -39,7 +39,7 @@ skip_whitespace(const char *str)
 	return (char *)str;
 }
 
-size_t
+static size_t
 match_integer(const char *str)
 {
 	size_t len = 0;
@@ -49,7 +49,7 @@ match_integer(const char *str)
 	return len;
 }
 
-size_t
+static size_t
 tokenize(char *str, Token *buf, size_t capacity)
 {
 	size_t bufpos = 0;

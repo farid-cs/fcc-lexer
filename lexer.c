@@ -40,6 +40,16 @@ skip_whitespace(const char *str)
 }
 
 size_t
+match_integer(const char *str)
+{
+	size_t len = 0;
+
+	while (isdigit(str[len]))
+		len += 1;
+	return len;
+}
+
+size_t
 tokenize(char *str, Token *buf, size_t capacity)
 {
 	size_t bufpos = 0;
@@ -48,6 +58,10 @@ tokenize(char *str, Token *buf, size_t capacity)
 		size_t toklen = 0;
 
 		str = skip_whitespace(str);
+
+		toklen = match_integer(str);
+		if (toklen)
+			goto new_token;
 
 		switch (*str) {
 		case '+':
@@ -76,7 +90,7 @@ tokenize(char *str, Token *buf, size_t capacity)
 int
 main(void)
 {
-	char source[] = "+-*/%";
+	char source[] = "200+30";
 	Token buf[100];
 	size_t token_count;
 

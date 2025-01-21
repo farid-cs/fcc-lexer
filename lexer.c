@@ -73,6 +73,8 @@ tokenize(char *str, Token *buf, size_t capacity)
 			goto new_token;
 		}
 
+		toklen = 0;
+
 		while (str[toklen] && !isspace(str[toklen]))
 			toklen += 1;
 
